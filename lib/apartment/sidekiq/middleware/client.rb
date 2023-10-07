@@ -1,7 +1,9 @@
 module Apartment::Sidekiq::Middleware
   class Client
-    def call(worker_class, item, queue, redis_pool=nil)
-      item["apartment"] ||= Apartment::Tenant.current
+    include Sidekiq::ClientMiddleware
+
+    def call(job_class, msg, queue, redis_pool)
+      msg["apartment"] ||= Apartment::Tenant.current
       yield
     end
   end

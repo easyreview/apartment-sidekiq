@@ -1,7 +1,9 @@
 module Apartment::Sidekiq::Middleware
   class Server
-    def call(worker_class, item, queue)
-      Apartment::Tenant.switch(item['apartment']) do
+    include Sidekiq::ServerMiddleware
+
+    def call(job_instance, msg, queue)
+      Apartment::Tenant.switch(msg['apartment']) do
         yield
       end
     end
