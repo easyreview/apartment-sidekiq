@@ -1,4 +1,4 @@
-# 3.0.0 (unreleased)
+# 3.0.0 (2026-11-13)
 
 First release of easyreview's fork.
 
