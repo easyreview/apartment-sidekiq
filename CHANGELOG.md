@@ -1,4 +1,17 @@
-# master (unreleased)
+# 3.0.0 (unreleased)
+
+First release of easyreview's fork.
+
+## Fixes
+  * `sidekiq_retries_exhausted` and `sidekiq_retry_in` blocks run in the tenant of the job. Sidekiq calls them from its retry handler, which wraps the server middleware, so they ran in whatever tenant the Sidekiq thread was in, usually the default one. Covers ActiveJob jobs and inherited blocks. If the tenant no longer exists, the block does not run and Sidekiq reports the `Apartment::TenantNotFound` to its error handlers.
+
+## BREAKING CHANGES
+  * The server middleware is prepended to the chain, so that every other server middleware runs in the tenant of the job. This replaces the special case for the batch middleware of Sidekiq Pro.
+  * Requires Ruby 3.3 or newer, Sidekiq 7.3 up to 8.x and ros-apartment 3.x.
+  * Removed `Apartment::Sidekiq::Middleware::Honeybadger::Server`, which the gem never installed.
+
+## Development
+  * Specs that run jobs through Sidekiq's processor against PostgreSQL schemas and Redis, a Docker setup and GitHub Actions CI for the supported combinations of Ruby, Sidekiq and Rails.
 
 # 2.0.0 (2023-10-7)
 

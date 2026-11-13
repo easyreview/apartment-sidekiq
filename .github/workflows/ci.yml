@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Ruby ${{ matrix.ruby }}, Sidekiq ${{ matrix.sidekiq }}, Rails ${{ matrix.rails }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { ruby: '3.3', sidekiq: '7.3', rails: '7.2' }
+          - { ruby: '3.4', sidekiq: '8.0', rails: '8.0' }
+          - { ruby: '4.0', sidekiq: '7.3', rails: '8.1' }
+          - { ruby: '4.0', sidekiq: '8.1', rails: '8.1' }
+    env:
+      SIDEKIQ_VERSION: '~> ${{ matrix.sidekiq }}.0'
+      RAILS_VERSION: '~> ${{ matrix.rails }}.0'
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/apartment_sidekiq_test
+      REDIS_URL: redis://localhost:6379/0
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: apartment_sidekiq_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rspec

@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: apartment_sidekiq_test
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 2s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: redis-cli ping
+      interval: 2s
+      retries: 15
+
+  ruby:
+    image: apartment-sidekiq-ruby:${RUBY_VERSION:-4.0}
+    build:
+      context: .
+      args:
+        RUBY_VERSION: ${RUBY_VERSION:-4.0}
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/apartment_sidekiq_test
+      REDIS_URL: redis://redis:6379/0
+      BUNDLE_PATH: /bundle/${RUBY_VERSION:-4.0}
+      SIDEKIQ_VERSION:
+      RAILS_VERSION:
+    volumes:
+      - .:/gem
+      - bundle:/bundle
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  bundle:
