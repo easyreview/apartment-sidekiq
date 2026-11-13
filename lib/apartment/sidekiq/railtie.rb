@@ -1,7 +1,11 @@
-module Apartment::Sidekiq
-  class Railtie < Rails::Railtie
-    initializer "apartment.sidekiq" do
-      Apartment::Sidekiq::Middleware.run
+# frozen_string_literal: true
+
+module Apartment
+  module Sidekiq
+    class Railtie < ::Rails::Railtie
+      initializer 'apartment.sidekiq' do
+        Middleware.run
+      end
     end
   end
 end
