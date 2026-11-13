@@ -5,7 +5,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: apartment_sidekiq_test
     healthcheck:
-      test: pg_isready -U postgres
+      # Over TCP: while the image creates the database, a temporary server answers on the socket only.
+      test: pg_isready -U postgres -h 127.0.0.1
       interval: 2s
       retries: 15
 
